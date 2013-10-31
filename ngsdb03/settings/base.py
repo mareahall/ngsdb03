@@ -12,6 +12,7 @@ GRAPPELLI_ADMIN_TITLE='NGSDB03: Myler Lab NGS database'
 
 ADMINS = (
     ('Gowthaman Ramasamy', 'ragowthaman@gmail.com'),
+          ('Marea Cobb', 'marea.cobb@seattlebiomed.org'),
 )
 
 MANAGERS = ADMINS
