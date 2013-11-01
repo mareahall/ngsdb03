@@ -8,6 +8,18 @@ from django.forms.models import BaseInlineFormSet
 
 from ngsdbview.autoregister import autoregister
 
+
+
+
+
+class ChromosomeAdmin(admin.ModelAdmin):
+    list_display = ('chromosome_id', 'chromosome_name', 'chromosome_version', 'size', 'organism')
+admin.site.register(Chromosome, ChromosomeAdmin)
+
+
+#______________________________________________________________________________
+
+
 admin.site.unregister(User)
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
