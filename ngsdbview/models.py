@@ -11,7 +11,105 @@
 from django.db import models
 from django.contrib.auth.models import User
 from ngsdbview.validators import *
+from django.core.validators import RegexValidator
+from django.db.models import *
+import re
+from ngsdbview.validators import *
 #import fields import *
+
+class SNP(models.Model):
+    snp_id = models.AutoField(primary_key=True)
+    result = models.ForeignKey('Result', blank=True, null=True)
+    referenceBase = models.CharField(max_length=1, validators=[
+        RegexValidator(
+            regex=r'^(?i)[atcg]',
+            message='This must be an \'a\', \'g\', \'c\', or \'t\'',
+            code='Invalid_Base'
+        ),
+    ],
+    )
+    alternateBase = models.CharField(max_length=1, validators=[
+        RegexValidator(regex=r'^(?i)[agct]',
+                       message='This must be an \'a\', \'g\', \'c\', or \'t\'.',
+                       code='Invalid Base'
+        ),
+    ],
+    )
+    heterozygosity = NullBooleanField()
+    quality = models.IntegerField()
+    library = models.ForeignKey('Library', blank=True, null=True)
+    chromosome = models.ForeignKey('Chromosome')
+    snptype = models.ForeignKey('SNP_Type')
+
+    def __unicode__(self):
+        return str(self.snp_id)
+
+
+class SNP_Summary(models.Model):
+    result = models.ForeignKey('Result', blank=True)
+    level = models.ForeignKey('Summary_Level_CV')
+    tag = models.TextField()
+    value = models.TextField()
+
+
+class Summary_Level_CV(models.Model):
+    level_id = models.AutoField(primary_key=True)
+    level_name = models.CharField(max_length=25)
+
+
+class Effect(models.Model):
+    snp = models.ForeignKey('SNP')
+    effect_id = models.ForeignKey('Effect_CV')
+    effect_class = models.CharField(max_length=45)
+    effect_string = models.CharField(max_length=45)
+
+
+class Effect_CV(models.Model):
+    effect_id = models.AutoField(primary_key=True)
+    effect_name = models.CharField(max_length=45)
+
+
+class Statistics(models.Model):
+    stats_id = models.AutoField(primary_key=True)
+    snp = models.ForeignKey('SNP')
+    stats_cvterm_id = models.ForeignKey('Statistics_CV')
+    cv_value = models.TextField()
+
+
+class Statistics_CV(models.Model):
+    cvterm_id = models.AutoField(primary_key=True)
+    cvgroup_id = models.IntegerField()
+    cvterm = models.CharField(max_length=20)
+    cv_notes = models.TextField()
+
+
+class Filter(models.Model):
+    snp = models.ForeignKey('SNP')
+    filter_id = models.AutoField(primary_key=True)
+    filter_result = models.BooleanField()
+
+
+class Chromosome(models.Model):
+    chromosome_id = models.AutoField(primary_key=True)
+    chromosome_name = models.CharField(max_length=50)
+    chromosome_version = models.CharField(max_length=50)
+    size = models.IntegerField()
+    organism = ForeignKey('Organism')
+
+
+class SNP_Type(models.Model):
+    snptype_id = models.AutoField(primary_key=True)
+    indel = models.BooleanField()
+    deletion = models.BooleanField()
+    is_snp = models.BooleanField()
+    monomorphic = models.BooleanField()
+    transition = models.BooleanField()
+    sv = models.BooleanField()
+
+
+#__________________________________________________________________________________________________________
+
+
 
 class Author(models.Model):
     author_id = models.AutoField(primary_key=True)
@@ -19,46 +117,58 @@ class Author(models.Model):
     lastname = models.CharField(max_length=45)
     designation = models.CharField(unique=True, max_length=5)
     email = models.EmailField(unique=True)
+
     def __unicode__(self):
         return str(self.designation)
+
 
 class Librarytype(models.Model):
     librarytype_id = models.AutoField(primary_key=True)
     type = models.CharField(unique=True, max_length=25)
     notes = models.TextField(max_length=400, blank=True)
+
     def __unicode__(self):
         return str(self.type)
+
 
 class Protocol(models.Model):
     protocol_id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=50)
     sopfile = models.FileField(upload_to="protocols")
     notes = models.CharField(max_length=400, default=None)
+
     def __unicode__(self):
         return str(self.name)
+
 
 class Seqtech(models.Model):
     seqtech_id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=100)
     notes = models.TextField(blank=True)
 
+
 class Lifestage(models.Model):
     lifestage_id = models.AutoField(primary_key=True)
     lifestage = models.CharField(unique=True, max_length=45)
     notes = models.CharField(max_length=400, default=None)
+
     def __unicode__(self):
         return str(self.lifestage)
+
 
 class Phenotype(models.Model):
     phenotype_id = models.AutoField(primary_key=True)
     phenotype = models.CharField(unique=True, max_length=45)
     notes = models.CharField(max_length=45, default=None)
+
     def __unicode__(self):
         return str(self.phenotype)
+
 
 class Growthphase(models.Model):
     growthphase = models.CharField(unique=True, max_length=100)
     notes = models.CharField(max_length=400, default=None, blank=True)
+
     def __unicode__(self):
         return unicode(self.growthphase)
 
@@ -66,9 +176,9 @@ class Growthphase(models.Model):
 class Genotype(models.Model):
     genotype = models.CharField(unique=True, max_length=45)
     notes = models.CharField(max_length=45, default=None, blank=True)
+
     def __unicode__(self):
         return unicode(self.genotype)
-
 
 
 class Collaborator(models.Model):
@@ -97,8 +207,10 @@ class Organism(models.Model):
     strain = models.CharField(max_length=45)
     isolate = models.CharField(max_length=45)
     source = models.CharField(max_length=100)
+
     def __unicode__(self):
         return str(self.organismcode)
+
 
 class Software(models.Model):
     software_id = models.AutoField(primary_key=True)
@@ -108,30 +220,38 @@ class Software(models.Model):
     source = models.CharField(max_length=255)
     sourceuri = models.CharField(max_length=255)
     notes = models.TextField(default=None)
+
     def __unicode__(self):
         return str(self.name)
+
 
 class Analysistype(models.Model):
     analysistype_id = models.AutoField(primary_key=True)
     type = models.CharField(unique=True, max_length=255)
     definition = models.TextField()
+
     def __unicode__(self):
         return str(self.type)
+
 
 class Dbxref(models.Model):
     dbxref_id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=255)
     url = models.CharField(max_length=255)
     definition = models.TextField()
+
     def __unicode__(self):
         return str(self.dbxref_id)
+
 
 class Cv(models.Model):
     cv_id = models.AutoField(primary_key=True)
     name = models.CharField(unique=True, max_length=255, db_index=True)
     definition = models.TextField()
+
     def __unicode__(self):
         return str(self.name)
+
 
 class Cvterm(models.Model):
     cvterm_id = models.AutoField(primary_key=True)
@@ -141,8 +261,10 @@ class Cvterm(models.Model):
     dbxref = models.ForeignKey(Dbxref)
     is_obsolete = models.BooleanField(default="False")
     is_relationshiptype = models.BooleanField()
+
     def __unicode__(self):
         return str(self.name)
+
 
 class Genome(models.Model):
     genome_id = models.AutoField(primary_key=True)
@@ -151,8 +273,10 @@ class Genome(models.Model):
     source = models.CharField(max_length=45)
     svnrevision = models.CharField(max_length=45)
     svnpath = models.TextField(blank=True)
+
     def __unicode__(self):
         return str(self.organism)
+
 
 class Library(models.Model):
     library_id = models.AutoField(primary_key=True)
@@ -164,7 +288,7 @@ class Library(models.Model):
     collaborator = models.ForeignKey(Collaborator)
     librarytype = models.ForeignKey(Librarytype)
     protocol = models.ForeignKey(Protocol)
-#	seqtech = models.ForeignKey(Seqtech)
+    #	seqtech = models.ForeignKey(Seqtech)
     fastqname = models.CharField(max_length=1000)
     fastqalias = models.CharField(max_length=1000)
     librarysize = models.IntegerField()
@@ -172,29 +296,37 @@ class Library(models.Model):
     downloaddate = models.DateField()
     notes = models.CharField(max_length=400)
     fastqpath = models.CharField(max_length=1025)
+
     def __unicode__(self):
         return str(self.librarycode)
+
     class Meta:
         permissions = (("view_library", "Can see the library"),)
 
+
 def get_libraryfile_upload_destination(instance, filename):
     return "libraryfiles/{id}/{file}".format(id=instance.library.librarycode, file=filename)
+
 
 class Libraryfile(models.Model):
     libraryfile_id = models.AutoField(primary_key=True)
     library = models.ForeignKey(Library)
     notes = models.CharField(max_length=1000, default='qc')
     file = models.FileField(upload_to=get_libraryfile_upload_destination)
+
     def __unicode__(self):
         return str(self.library)
+
 
 class Libraryprop(models.Model):
     libraryprop_id = models.AutoField(primary_key=True)
     library = models.ForeignKey(Library)
     cvterm = models.ForeignKey(Cvterm)
     value = models.TextField()
+
     def __unicode__(self):
         return str(self.libraryprop_id)
+
 
 class Result(models.Model):
     result_id = models.AutoField(primary_key=True)
@@ -206,27 +338,34 @@ class Result(models.Model):
     analysispath = models.CharField(max_length=255)
     time_data_loaded = models.DateTimeField(auto_now=True)
     notes = models.TextField(default=None)
+
     def __unicode__(self):
         return str(self.result_id)
 
+
 def get_resultfile_upload_destination(instance, filename):
     return "resultfiles/resultid_{id}/{file}".format(id=instance.result_id, file=filename)
+
 
 class Resultfile(models.Model):
     resultfile_id = models.AutoField(primary_key=True)
     result = models.ForeignKey(Result)
     notes = models.CharField(max_length=1000, default='result')
     file = models.FileField(upload_to=get_resultfile_upload_destination)
+
     def __unicode__(self):
         return str(self.result)
+
 
 class Resultprop(models.Model):
     resultprop_id = models.AutoField(primary_key=True)
     result = models.ForeignKey(Result)
     cvterm = models.ForeignKey(Cvterm)
     value = models.TextField()
+
     def __unicode__(self):
         return str(self.resultprop_id)
+
 
 class Resultraw(models.Model):
     resultraw_id = models.AutoField(primary_key=True)
@@ -238,8 +377,10 @@ class Resultraw(models.Model):
     negstrandcount = models.IntegerField()
     majorstrand = models.IntegerField()
     time_data_loaded = models.DateTimeField(auto_now=True)
+
     def __unicode__(self):
         return str(self.resultraw_id)
+
 
 class Resultslsite(models.Model):
     resultslsite_id = models.AutoField(primary_key=True)
@@ -263,6 +404,7 @@ class Resultslsite(models.Model):
     def __unicode__(self):
         return str(self.resultslsite_id)
 
+
 class Resultslgene(models.Model):
     resultslgene_id = models.AutoField(primary_key=True)
     result = models.ForeignKey(Result)
@@ -284,6 +426,7 @@ class Resultslgene(models.Model):
     def __unicode__(self):
         return str(self.resultslgene_id)
 
+
 class Analysis(models.Model):
     analysis_id = models.AutoField(primary_key=True)
     analysistype = models.ForeignKey(Analysistype)
@@ -293,20 +436,23 @@ class Analysis(models.Model):
     ordinal = models.IntegerField()
     time_data_loaded = models.DateTimeField(auto_now=True)
     notes = models.TextField(null=True)
+
     def __unicode__(self):
         return str(self.analysis_id)
 
+
 def get_analysisfile_upload_destination(instance, filename):
     return "analysesfiles/resultid_{id}/{file}".format(id=instance.analysis.result_id, file=filename)
+
 
 class Analysisfile(models.Model):
     analysisfile_id = models.AutoField(primary_key=True)
     analysis = models.ForeignKey(Analysis)
     notes = models.CharField(max_length=1000, default='analysis')
     file = models.FileField(upload_to=get_analysisfile_upload_destination)
+
     def __unicode__(self):
         return str(self.analysis)
-
 
 
 class Analysisprop(models.Model):
@@ -314,8 +460,10 @@ class Analysisprop(models.Model):
     analysis = models.ForeignKey(Analysis)
     cvterm = models.ForeignKey(Cvterm)
     value = models.TextField()
+
     def __unicode__(self):
         return str(self.analysisprop_id)
+
 
 class Feature(models.Model):
     feature_id = models.AutoField(primary_key=True)
@@ -333,8 +481,10 @@ class Feature(models.Model):
     aa_seq = models.TextField()
     time_data_loaded = models.DateTimeField(auto_now_add=True)
     time_data_modified = models.DateTimeField(auto_now=True)
+
+
 def __unicode__(self):
-        return str(self.geneid)
+    return str(self.geneid)
 
 
 class Geneidmap(models.Model):
@@ -356,16 +506,20 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 
+
 class UserProfile(models.Model):
     """This class extends User to add new fields and function definitions"""
     # This field is required.
     id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User)
-    libraries = models.ManyToManyField(Library,default=['AH006'])
+    libraries = models.ManyToManyField(Library, default=['AH006'])
+
     def __unicode__(self):
         return str(self.user)
 
-    #This is used to create a handle for a user to his or her profile
+        #This is used to create a handle for a user to his or her profile
+
+
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)

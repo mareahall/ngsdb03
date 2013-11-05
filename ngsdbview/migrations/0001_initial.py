@@ -22,6 +22,7 @@ class Migration(SchemaMigration):
         db.create_table(u'ngsdbview_librarytype', (
             ('librarytype_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('type', self.gf('django.db.models.fields.CharField')(unique=True, max_length=25)),
+            ('notes', self.gf('django.db.models.fields.TextField')(max_length=400, blank=True)),
         ))
         db.send_create_signal(u'ngsdbview', ['Librarytype'])
 
@@ -58,6 +59,22 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal(u'ngsdbview', ['Phenotype'])
 
+        # Adding model 'Growthphase'
+        db.create_table(u'ngsdbview_growthphase', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('growthphase', self.gf('django.db.models.fields.CharField')(unique=True, max_length=100)),
+            ('notes', self.gf('django.db.models.fields.CharField')(default=None, max_length=400, blank=True)),
+        ))
+        db.send_create_signal(u'ngsdbview', ['Growthphase'])
+
+        # Adding model 'Genotype'
+        db.create_table(u'ngsdbview_genotype', (
+            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('genotype', self.gf('django.db.models.fields.CharField')(unique=True, max_length=45)),
+            ('notes', self.gf('django.db.models.fields.CharField')(default=None, max_length=45, blank=True)),
+        ))
+        db.send_create_signal(u'ngsdbview', ['Genotype'])
+
         # Adding model 'Collaborator'
         db.create_table(u'ngsdbview_collaborator', (
             ('collaborator_id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -65,6 +82,9 @@ class Migration(SchemaMigration):
             ('lastname', self.gf('django.db.models.fields.CharField')(max_length=45)),
             ('email', self.gf('django.db.models.fields.EmailField')(unique=True, max_length=100)),
             ('affiliation', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('sharepoint_site', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
+            ('ftp_path', self.gf('django.db.models.fields.URLField')(max_length=200, blank=True)),
+            ('ftp_username', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
         ))
         db.send_create_signal(u'ngsdbview', ['Collaborator'])
 
@@ -373,6 +393,12 @@ class Migration(SchemaMigration):
         # Deleting model 'Phenotype'
         db.delete_table(u'ngsdbview_phenotype')
 
+        # Deleting model 'Growthphase'
+        db.delete_table(u'ngsdbview_growthphase')
+
+        # Deleting model 'Genotype'
+        db.delete_table(u'ngsdbview_genotype')
+
         # Deleting model 'Collaborator'
         db.delete_table(u'ngsdbview_collaborator')
 
@@ -530,7 +556,10 @@ class Migration(SchemaMigration):
             'collaborator_id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'unique': 'True', 'max_length': '100'}),
             'firstname': ('django.db.models.fields.CharField', [], {'max_length': '45'}),
-            'lastname': ('django.db.models.fields.CharField', [], {'max_length': '45'})
+            'ftp_path': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'}),
+            'ftp_username': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
+            'lastname': ('django.db.models.fields.CharField', [], {'max_length': '45'}),
+            'sharepoint_site': ('django.db.models.fields.URLField', [], {'max_length': '200', 'blank': 'True'})
         },
         u'ngsdbview.cv': {
             'Meta': {'object_name': 'Cv'},
@@ -593,6 +622,18 @@ class Migration(SchemaMigration):
             'svnrevision': ('django.db.models.fields.CharField', [], {'max_length': '45'}),
             'version': ('django.db.models.fields.CharField', [], {'max_length': '45'})
         },
+        u'ngsdbview.genotype': {
+            'Meta': {'object_name': 'Genotype'},
+            'genotype': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '45'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'notes': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '45', 'blank': 'True'})
+        },
+        u'ngsdbview.growthphase': {
+            'Meta': {'object_name': 'Growthphase'},
+            'growthphase': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'notes': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '400', 'blank': 'True'})
+        },
         u'ngsdbview.library': {
             'Meta': {'object_name': 'Library'},
             'author': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['ngsdbview.Author']"}),
@@ -629,6 +670,7 @@ class Migration(SchemaMigration):
         u'ngsdbview.librarytype': {
             'Meta': {'object_name': 'Librarytype'},
             'librarytype_id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'notes': ('django.db.models.fields.TextField', [], {'max_length': '400', 'blank': 'True'}),
             'type': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '25'})
         },
         u'ngsdbview.lifestage': {
@@ -754,7 +796,7 @@ class Migration(SchemaMigration):
         u'ngsdbview.userprofile': {
             'Meta': {'object_name': 'UserProfile'},
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'libraries': ('django.db.models.fields.related.ManyToManyField', [], {'default': '[]', 'to': u"orm['ngsdbview.Library']", 'symmetrical': 'False'}),
+            'libraries': ('django.db.models.fields.related.ManyToManyField', [], {'default': "['AH006']", 'to': u"orm['ngsdbview.Library']", 'symmetrical': 'False'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
         }
     }
