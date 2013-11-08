@@ -1,4 +1,4 @@
-# settings/gowthamanlaptop.py
+# settings/mareamac.py
 import os
 from .base import *
 
