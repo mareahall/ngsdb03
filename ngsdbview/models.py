@@ -50,8 +50,8 @@ class SNP_Summary(models.Model):
     result = models.ForeignKey('Result', blank=True)
     level = models.ForeignKey('Summary_Level_CV')
     tag = models.TextField()
+    value_type = models.TextField()
     value = models.TextField()
-
 
 class Summary_Level_CV(models.Model):
     level_id = models.AutoField(primary_key=True)
@@ -95,8 +95,8 @@ class Chromosome(models.Model):
     chromosome_name = models.CharField(max_length=50)
     chromosome_version = models.CharField(max_length=50)
     size = models.IntegerField()
-    organism = ForeignKey('Organism')
-
+    genome_name = models.ForeignKey('Organism', to_field='organismcode')
+    genome_version = models.CharField(max_length=10)
 
 class SNP_Type(models.Model):
     snptype_id = models.AutoField(primary_key=True)
@@ -518,7 +518,7 @@ class UserProfile(models.Model):
     def __unicode__(self):
         return str(self.user)
 
-        #This is used to create a handle for a user to his or her profile
+#This is used to create a handle for a user to his or her profile
 
 
 def create_user_profile(sender, instance, created, **kwargs):
