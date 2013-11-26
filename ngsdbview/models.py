@@ -1,4 +1,4 @@
-## copied verbatim from ngsdb.ngsdbview
+ ## copied verbatim from ngsdb.ngsdbview
 # This is an auto-generated Django model module.
 # You'll have to do the following manually to clean this up:
 #     * Rearrange models' order
@@ -464,34 +464,22 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 class SNP(models.Model):
     snp_id = models.AutoField(primary_key=True)
-    result = models.ForeignKey('Result', blank=True, null=True)
-    referenceBase = models.CharField(max_length=1, validators=[
-        RegexValidator(
-            regex=r'^(?i)[atcg]',
-            message='This must be an \'a\', \'g\', \'c\', or \'t\'',
-            code='Invalid_Base'
-        ),
-    ],
-    )
-    alternateBase = models.CharField(max_length=1, validators=[
-        RegexValidator(regex=r'^(?i)[agct]',
-                       message='This must be an \'a\', \'g\', \'c\', or \'t\'.',
-                       code='Invalid Base'
-        ),
-    ],
-    )
+    snp_position = models.IntegerField()
+    result = models.ForeignKey('Result')
+    ref_base = models.CharField(max_length=20)
+    alt_base = models.CharField(max_length=20)
     heterozygosity = NullBooleanField()
     quality = models.IntegerField()
-    library = models.ForeignKey('Library', blank=True, null=True)
+    library = models.ForeignKey('Library')
     chromosome = models.ForeignKey('Chromosome')
     snptype = models.ForeignKey('SNP_Type')
-
-    def __unicode__(self):
-        return str(self.snp_id)
+#
+#    def __unicode__(self):
+#        return str(self.snp_id)
 
 
 class SNP_Summary(models.Model):
-    result = models.ForeignKey('Result', blank=True)
+    result = models.ForeignKey('Result')
     level = models.ForeignKey('Summary_Level_CV')
     tag = models.TextField()
     value_type = models.TextField()
@@ -505,7 +493,7 @@ class Summary_Level_CV(models.Model):
 
 class Effect(models.Model):
     snp = models.ForeignKey('SNP')
-    effect_id = models.ForeignKey('Effect_CV')
+    effect = models.ForeignKey('Effect_CV')
     effect_class = models.CharField(max_length=45)
     effect_string = models.CharField(max_length=45)
 
@@ -517,8 +505,7 @@ class Effect_CV(models.Model):
 
 class Statistics_cv(models.Model):
     cvterm_id = models.AutoField(primary_key=True)
-    cvgroup_id = models.IntegerField()
-    cvterm = models.CharField(max_length=20)
+    cvterm = models.CharField(max_length=20, unique=True)
     cv_notes = models.TextField()
 
 
@@ -534,14 +521,17 @@ class Filter(models.Model):
     filter_id = models.AutoField(primary_key=True)
     filter_result = models.BooleanField()
 
+class Filter_CV(models.Model):
+    filterCV_id = models.AutoField(primary_key=True)
+    filter_type = models.TextField()
+
 
 class Chromosome(models.Model):
     chromosome_id = models.AutoField(primary_key=True)
     chromosome_name = models.CharField(max_length=50)
-    chromosome_version = models.CharField(max_length=50)
     size = models.IntegerField()
     genome_name = models.ForeignKey('Organism', to_field='organismcode')
-    genome_version = models.ForeignKey('Genome', to_field='version')
+    genome_version = models.CharField(max_length=50)
 
 
 class SNP_Type(models.Model):
