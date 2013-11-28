@@ -522,7 +522,7 @@ class Filter(models.Model):
     filter_result = models.BooleanField()
 
 class Filter_CV(models.Model):
-    filterCV_id = models.AutoField(primary_key=True)
+    filtercv_id = models.AutoField(primary_key=True)
     filter_type = models.TextField()
 
 
