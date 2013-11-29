@@ -18,7 +18,6 @@ from ngsdbview.validators import *
 #import fields import *
 
 
-<<<<<<< HEAD
 class SNP(models.Model):
     snp_id = models.AutoField(primary_key=True)
     result = models.ForeignKey('Result', blank=True, null=True)
