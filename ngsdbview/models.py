@@ -18,9 +18,106 @@ from ngsdbview.validators import *
 #import fields import *
 
 
+<<<<<<< HEAD
+class SNP(models.Model):
+    snp_id = models.AutoField(primary_key=True)
+    result = models.ForeignKey('Result', blank=True, null=True)
+    referenceBase = models.CharField(max_length=1, validators=[
+        RegexValidator(
+            regex=r'^(?i)[atcg]',
+            message='This must be an \'a\', \'g\', \'c\', or \'t\'',
+            code='Invalid_Base'
+        ),
+    ],
+    )
+    alternateBase = models.CharField(max_length=1, validators=[
+        RegexValidator(regex=r'^(?i)[agct]',
+                       message='This must be an \'a\', \'g\', \'c\', or \'t\'.',
+                       code='Invalid Base'
+        ),
+    ],
+    )
+    heterozygosity = NullBooleanField()
+    quality = models.IntegerField()
+    library = models.ForeignKey('Library', blank=True, null=True)
+    chromosome = models.ForeignKey('Chromosome')
+    snptype = models.ForeignKey('SNP_Type')
+
+    def __unicode__(self):
+        return str(self.snp_id)
+
+
+class SNP_Summary(models.Model):
+    result = models.ForeignKey('Result', blank=True)
+    level = models.ForeignKey('Summary_Level_CV')
+    tag = models.TextField()
+    value_type = models.TextField()
+    value = models.TextField()
+
+class Summary_Level_CV(models.Model):
+    level_id = models.AutoField(primary_key=True)
+    level_name = models.CharField(max_length=25)
+
+
+class Effect(models.Model):
+    snp = models.ForeignKey('SNP')
+    effect_id = models.ForeignKey('Effect_CV')
+    effect_class = models.CharField(max_length=45)
+    effect_string = models.CharField(max_length=45)
+
+
+class Effect_CV(models.Model):
+    effect_id = models.AutoField(primary_key=True)
+    effect_name = models.CharField(max_length=45)
+
+
+class Statistics(models.Model):
+    stats_id = models.AutoField(primary_key=True)
+    snp = models.ForeignKey('SNP')
+    stats_cvterm_id = models.ForeignKey('Statistics_CV')
+    cv_value = models.TextField()
+
+
+class Statistics_CV(models.Model):
+    cvterm_id = models.AutoField(primary_key=True)
+    cvgroup_id = models.IntegerField()
+    cvterm = models.CharField(max_length=20)
+    cv_notes = models.TextField()
+
+
+class Filter(models.Model):
+    snp = models.ForeignKey('SNP')
+    filter_id = models.AutoField(primary_key=True)
+    filter_result = models.BooleanField()
+
+
+class Chromosome(models.Model):
+    chromosome_id = models.AutoField(primary_key=True)
+    chromosome_name = models.CharField(max_length=50)
+    chromosome_version = models.CharField(max_length=50)
+    size = models.IntegerField()
+    genome_name = models.ForeignKey('Organism', to_field='organismcode')
+    genome_version = models.CharField(max_length=10)
+
+class SNP_Type(models.Model):
+    snptype_id = models.AutoField(primary_key=True)
+    indel = models.BooleanField()
+    deletion = models.BooleanField()
+    is_snp = models.BooleanField()
+    monomorphic = models.BooleanField()
+    transition = models.BooleanField()
+    sv = models.BooleanField()
+
+
 #__________________________________________________________________________________________________________
 
 
+
+=======
+#__________________________________________________________________________________________________________
+
+
+>>>>>>> de945575329b947548d94cac8c8078fff6f1060d
 class Author(models.Model):
     author_id = models.AutoField(primary_key=True)
     firstname = models.CharField(max_length=45)
